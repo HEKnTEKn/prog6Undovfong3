@@ -244,7 +244,6 @@ char correctUpper(char input)        //corrects a lowercase character into a cap
 /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 char getInput(void)     //function acquires input of a character as prompted by other functions.
 {
-
     char input = ' ';
     scanf(" %c", &input);
 
