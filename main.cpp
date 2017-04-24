@@ -7,16 +7,30 @@
 
 
 //include libraries, define global variables,set namespace to reduce cout/in redundancy
-#include "cstdio"
-#include "cstdlib"
-#include "iostream"
-#include "cstring"
-#include "ctime"
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
+#include <cstring>
+#include <ctime>
 using namespace std;	//set namespace for ease of cin/cout
 
 #define RANDOM 0
 
+
+/*---------------------------------------------------------------------------STRUCT CREATION---------------------------------------------------------------------------------------------*/
+
+
+typedef struct Node
+{
+	int moveNumber = 0;
+    char table[16] = {0};
+    struct Node *pNext = NULL;
+} Node;
+
+
 /*----------------------------------------------------------------------------PROTOTYPES-------------------------------------------------------------------------------------------------*/
+
+
 char correctUpper(char input);        //corrects a lowercase character into a capital character for ease of use
 char getInput(void);     //function acquires input of a character as prompted by other functions.
 //function that takes character variable and checks for for 'x' or 'X'. if true than the function will return an integer of 1 to main(), which will then break away from the loop.
@@ -40,10 +54,11 @@ int checkForWinner(char**& dictionaryPTR,int wordOnePos, int wordTwoPos, int wor
                    char c5,  char c6,  char c7,  char c8,
                    char c9,  char c10, char c11, char c12,
                    char c13, char c14, char c15, char c16);
-/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
 
-/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------CODE-----------------------------------------------------------------------------------------------*/
+
+
 int main()		//main
 {
 //initialize variables
@@ -51,13 +66,18 @@ int main()		//main
     FILE* mediumDictionary = NULL;
     FILE* largeDictionary  = NULL;
 
+    Node *pNode = new Node;
+    Node *pTemp;
+
+
     char **dictionaryPTR;
 
-    char inputChar = NULL;
-    char selection = NULL;
 
-    char characters[16] = { NULL };
-    char originalCharacters[16] = { NULL };
+    char inputChar = 0;
+    char selection = 0;
+
+    char characters[16] = { 0 };
+    char originalCharacters[16] = { 0 };
 
     int exitCondition = -1;
     int inputInt = 0;
@@ -77,7 +97,7 @@ int main()		//main
 /*-------------------------------------------------------------------------------*/
         case '1':	//small dictionary
         {
-            srand(time(NULL));
+            srand((unsigned int) time(NULL));
 	        //set files to corresponding txt file
             smallDictionary = fopen("smallDictionary.txt", "r");
             //check if file opened correctly
@@ -125,7 +145,7 @@ int main()		//main
         case '2':	//medium dictionary
         {
             //SEED
-	        srand(time(NULL));
+	        srand((unsigned int) time(NULL));
             //set files to corresponding txt file
             mediumDictionary = fopen("mediumDictionary.txt", "r");
             //check if file opened correctly
@@ -173,7 +193,7 @@ int main()		//main
 /*--------------------------------------------------------------------------------*/
         case '3':	//large dictionary
         {
-            srand(time(NULL));
+            srand((unsigned int) time(NULL));
             //set files to corresponding txt file
             largeDictionary = fopen("largeDictionary.txt", "r");
             //check if file opened correctly
@@ -325,7 +345,7 @@ void setDictionary(FILE* dictionaryChosen, char**& dictionaryPTR, int fourWordCo
 void scanFileTo(FILE* file, char**& dictionaryPTR)		//function scans a string from file and copies to dictionary
 {
     int i = 0;
-    char tempWord[81] = { NULL };
+    char tempWord[81] = { 0 };
 
     while (fscanf(file, "%s", &tempWord) != EOF)
     {
@@ -344,7 +364,7 @@ void scanFileTo(FILE* file, char**& dictionaryPTR)		//function scans a string fr
 void shiftRowCol(int numberOfShifts,
                  char *first, char *second, char *third, char *fourth)		//function shifts a row or column by a given distance
 {
-    char tempChar = NULL;
+    char tempChar = 0;
 
     switch (numberOfShifts)
     {
@@ -541,7 +561,7 @@ void promptScanAndReact(char *input1, int *input2, char *characters, char *origi
         {
             int doneStat = -1;
 
-            char buffer[16] = { NULL };
+            char buffer[16] = { 0 };
             cout << "\nPressed R to Reset . . . ";
             do
             {
@@ -551,7 +571,7 @@ void promptScanAndReact(char *input1, int *input2, char *characters, char *origi
                     cout << "ERROR: INPUT NOT EQUAL TO 16, PLEASE TRY AGAIN!!!\n" << endl;
 
                     for (int i = 0; i < 16; ++i)
-                    { buffer[i] = { NULL }; }
+                    { buffer[i] = { 0 }; }
 
                     continue;
                 }
@@ -598,10 +618,10 @@ int checkForWinner(char**& dictionaryPTR,int wordOnePos, int wordTwoPos, int wor
                    char c9,  char c10, char c11, char c12,
                    char c13, char c14, char c15, char c16)		//function checks for winner
 {
-    char wordOne  [5] = { c1, c2, c3, c4, '\0' };
-    char wordTwo  [5] = { c1, c2, c3, c4, '\0' };
-    char wordThree[5] = { c1, c2, c3, c4, '\0' };
-    char wordFour [5] = { c1, c2, c3, c4, '\0' };
+    char wordOne  [5] = {  c1,  c2,  c3,  c4, '\0' };
+    char wordTwo  [5] = {  c5,  c6,  c7,  c8, '\0' };
+    char wordThree[5] = {  c9, c10, c11, c12, '\0' };
+    char wordFour [5] = { c13, c14, c15, c16, '\0' };
 
     if ((strcmp(dictionaryPTR[  wordOnePos], wordOne  ) == 0) && (strcmp(dictionaryPTR[ wordTwoPos], wordTwo ) == 0) &&
         (strcmp(dictionaryPTR[wordThreePos], wordThree) == 0) && (strcmp(dictionaryPTR[wordFourPos], wordFour) == 0))
