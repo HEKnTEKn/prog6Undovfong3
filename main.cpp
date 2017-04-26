@@ -302,18 +302,15 @@ void addNode(Node *headPTR, int *moveCount, char *table)       //function adds a
 /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 void undoMove(Node *headPTR, int &moveCount, char *table)      //function undoes a move
 {
-	if (headPTR->moveNumber == NULL)
-	{
-		cout << "ERROR: NO MOVES SAVED. PLEASE TRY TO MAKE A MOVE BEFORE ATTEMPTING TO UNDO!!!" << endl;
-	}
+	if (headPTR->moveNumber == 0)
+	{ cout << "ERROR: NO MOVES SAVED. PLEASE TRY TO MAKE A MOVE BEFORE ATTEMPTING TO UNDO!!!" << endl; }
 	else
     {
-        Node *tempPTR = new Node;       //create a temporary node to store HeadPTR
-	
-	    tempPTR = headPTR;      //set tempPTR to info headPTR
-	    table = tempPTR->table;     //set table = to the previous stored table
-	    tempPTR->moveNumber = --moveCount;      //store moveCount into moveCount within Node
-	    tempPTR = tempPTR->nextPTR;     //move headPTR to nextPTR in order to complete undo
+        Node *tempPTR    = headPTR;                //set tempPTR to info headPTR
+	    
+	    table               = tempPTR->table;                 //set table = to the previous stored table
+	    tempPTR->moveNumber = --moveCount;                    //store moveCount into moveCount within Node
+	    tempPTR             = tempPTR->nextPTR;               //move headPTR to nextPTR in order to complete undo
 	    delete(tempPTR);
     }
 
