@@ -24,233 +24,11 @@ typedef struct Node
 {
 	int moveNumber = 0;
     char table[16] = {0};
-    struct Node *pNext = NULL;
+    struct Node *nextPTR = NULL;
 } Node;
 
 
-/*----------------------------------------------------------------------------PROTOTYPES-------------------------------------------------------------------------------------------------*/
-
-
-char correctUpper(char input);        //corrects a lowercase character into a capital character for ease of use
-char getInput(void);     //function acquires input of a character as prompted by other functions.
-//function that takes character variable and checks for for 'x' or 'X'. if true than the function will return an integer of 1 to main(), which will then break away from the loop.
-int randomize(int min, int max);	//function uses rand() to supply a random number
-void displayInformationAndInstructions(void);		//function displays user info and instructions
-int promptAndScanForDictionarySize(char selection);		//function asks for dictionary size and returns userInput
-int analyzeDictionary(FILE* dictionaryChosen);	//function gets word count of file
-void setDictionary(FILE* dictionaryChosen, char**& dictionaryPTR, int fourWordCount); // function allocates memory for dictionary
-void scanFileTo(FILE* file, char**& dictionaryPTR);		//function scans a string from file and copies to dictionary
-void shiftRowCol(int numberOfShifts,
-                 char *first, char *second, char *third, char *fourth);		//function shifts a row or column by a given distance
-void swapRow(char* characters, char row, int distance);		//function sets up a row to be swapped by shiftRowCol()
-void swapColumn(char* characters, char column, int distance);		//function sets up a column to be swapped by shiftRowCol()
-void mixWords(char *characters);		//function is the master for all row and column shifts found above
-void displayTable(char c1,  char c2,  char c3,  char c4,    //displays table
-                  char c5,  char c6,  char c7,  char c8,
-                  char c9,  char c10, char c11, char c12,
-                  char c13, char c14, char c15, char c16);
-void promptScanAndReact(char *input1, int *input2, char *characters, char *originalCharacters);		//prompts for move and reacts accordingly
-int checkForWinner(char**& dictionaryPTR,int wordOnePos, int wordTwoPos, int wordThreePos, int wordFourPos, char c1,  char c2,  char c3,  char c4,  //function checks for winner
-                   char c5,  char c6,  char c7,  char c8,
-                   char c9,  char c10, char c11, char c12,
-                   char c13, char c14, char c15, char c16);
-
-
-/*------------------------------------------------------------------------------------CODE-----------------------------------------------------------------------------------------------*/
-
-
-int main()		//main
-{
-//initialize variables
-    FILE* smallDictionary  = NULL;
-    FILE* mediumDictionary = NULL;
-    FILE* largeDictionary  = NULL;
-
-    Node *pNode = new Node;
-    Node *pTemp;
-
-
-    char **dictionaryPTR;
-
-
-    char inputChar = 0;
-    char selection = 0;
-
-    char characters[16] = { 0 };
-    char originalCharacters[16] = { 0 };
-
-    int exitCondition = -1;
-    int inputInt = 0;
-    int fourWordCount = 0;
-    int wordOnePos, wordTwoPos, wordThreePos, wordFourPos;
-
-    displayInformationAndInstructions();
-
-    switch (promptAndScanForDictionarySize(selection))
-    {
-/*-------------------------------------------------------------------------------*/
-        case 'X':
-        {
-            cout << "You chose X to exit" << endl;
-            return -1;
-        }
-/*-------------------------------------------------------------------------------*/
-        case '1':	//small dictionary
-        {
-            srand((unsigned int) time(NULL));
-	        //set files to corresponding txt file
-            smallDictionary = fopen("smallDictionary.txt", "r");
-            //check if file opened correctly
-            if (smallDictionary == NULL)
-            {
-                cout << "Could not open dictionary.\n";
-                return -1;	 //-1 indicates error
-            }
-            //get fourWordCount then close file
-            fourWordCount = analyzeDictionary(smallDictionary);
-            rewind(smallDictionary);
-           //create dynamic array
-            setDictionary(smallDictionary, dictionaryPTR, fourWordCount);
-	        //rescan file into the created array.
-            scanFileTo(smallDictionary, dictionaryPTR);
-            //choose 4 indexes to be used as the words for our table.
-            wordOnePos   = randomize(0, fourWordCount); wordTwoPos  = randomize(0, fourWordCount);
-            wordThreePos = randomize(0, fourWordCount); wordFourPos = randomize(0, fourWordCount);
-            //set table characters equal to random mixed index words while also saving the original table
-            originalCharacters[ 0] = characters[ 0] = dictionaryPTR[  wordOnePos][0]; originalCharacters[ 1] = characters[ 1] = dictionaryPTR[  wordOnePos][1]; originalCharacters[ 2] = characters[ 2] = dictionaryPTR[  wordOnePos][2]; originalCharacters[ 3] = characters[ 3] = dictionaryPTR[  wordOnePos][3];
-            originalCharacters[ 4] = characters[ 4] = dictionaryPTR[  wordTwoPos][0]; originalCharacters[ 5] = characters[ 5] = dictionaryPTR[  wordTwoPos][1]; originalCharacters[ 6] = characters[ 6] = dictionaryPTR[  wordTwoPos][2]; originalCharacters[ 7] = characters[ 7] = dictionaryPTR[  wordTwoPos][3];
-            originalCharacters[ 8] = characters[ 8] = dictionaryPTR[wordThreePos][0]; originalCharacters[ 9] = characters[ 9] = dictionaryPTR[wordThreePos][1]; originalCharacters[10] = characters[10] = dictionaryPTR[wordThreePos][2]; originalCharacters[11] = characters[11] = dictionaryPTR[wordThreePos][3];
-            originalCharacters[12] = characters[12] = dictionaryPTR[ wordFourPos][0]; originalCharacters[13] = characters[13] = dictionaryPTR[ wordFourPos][1]; originalCharacters[14] = characters[14] = dictionaryPTR[ wordFourPos][2]; originalCharacters[15] = characters[15] = dictionaryPTR[ wordFourPos][3];
-
-            mixWords(characters);
-
-            do
-            {
-                displayTable(characters[0], characters[1], characters[ 2], characters[ 3], characters[ 4], characters[ 5], characters[ 6], characters[ 7],
-                             characters[8], characters[9], characters[10], characters[11], characters[12], characters[13], characters[14], characters[15]);
-
-                promptScanAndReact(&inputChar, &inputInt, characters, originalCharacters);
-
-                exitCondition = checkForWinner(dictionaryPTR, wordOnePos, wordTwoPos, wordThreePos, wordFourPos, characters[ 0], characters[ 1], characters[ 2], characters[ 3],
-                                               characters[ 4], characters[ 5], characters[ 6], characters[ 7],
-                                               characters[ 8], characters[ 9], characters[10], characters[11],
-                                               characters[12], characters[13], characters[14], characters[15]);
-
-            } while (exitCondition != 1);
-
-            fclose(smallDictionary);
-            break;
-        }
-/*--------------------------------------------------------------------------------*/
-        case '2':	//medium dictionary
-        {
-            //SEED
-	        srand((unsigned int) time(NULL));
-            //set files to corresponding txt file
-            mediumDictionary = fopen("mediumDictionary.txt", "r");
-            //check if file opened correctly
-            if (mediumDictionary == NULL)
-            {
-                cout << "Could not open dictionary.\n";
-                return -1;	// -1 indicates error
-            }
-            //get fourWordCount then close file
-            fourWordCount = analyzeDictionary(mediumDictionary);
-            rewind(mediumDictionary);
-            //create dynamic array
-            setDictionary(mediumDictionary, dictionaryPTR, fourWordCount);
-            //rescan file into the created array.
-            scanFileTo(mediumDictionary, dictionaryPTR);
-            //choose 4 indexes to be used as the words for our table.
-            wordOnePos   = randomize(0, fourWordCount); wordTwoPos  = randomize(0, fourWordCount);
-            wordThreePos = randomize(0, fourWordCount); wordFourPos = randomize(0, fourWordCount);
-            //set table characters equal to random mixed index words while also saving the original table
-            originalCharacters[ 0] = characters[ 0] = dictionaryPTR[wordOnePos][0]  ; originalCharacters[ 1] = characters[ 1] = dictionaryPTR[wordOnePos][1]  ; originalCharacters[ 2] = characters[ 2] = dictionaryPTR[wordOnePos][2]  ; originalCharacters[ 3] = characters[ 3] = dictionaryPTR[wordOnePos][3]  ;
-            originalCharacters[ 4] = characters[ 4] = dictionaryPTR[wordTwoPos][0]  ; originalCharacters[ 5] = characters[ 5] = dictionaryPTR[wordTwoPos][1]  ; originalCharacters[ 6] = characters[ 6] = dictionaryPTR[wordTwoPos][2]  ; originalCharacters[ 7] = characters[ 7] = dictionaryPTR[wordTwoPos][3]  ;
-            originalCharacters[ 8] = characters[ 8] = dictionaryPTR[wordThreePos][0]; originalCharacters[ 9] = characters[ 9] = dictionaryPTR[wordThreePos][1]; originalCharacters[10] = characters[10] = dictionaryPTR[wordThreePos][2]; originalCharacters[11] = characters[11] = dictionaryPTR[wordThreePos][3];
-            originalCharacters[12] = characters[12] = dictionaryPTR[wordFourPos][0] ; originalCharacters[13] = characters[13] = dictionaryPTR[wordFourPos][1] ; originalCharacters[14] = characters[14] = dictionaryPTR[wordFourPos][2] ; originalCharacters[15] = characters[15] = dictionaryPTR[wordFourPos][3] ;
-
-            mixWords(characters);
-
-            do
-            {
-                displayTable(characters[0], characters[1], characters[ 2], characters[ 3], characters[ 4], characters[ 5], characters[ 6], characters[ 7],
-                             characters[8], characters[9], characters[10], characters[11], characters[12], characters[13], characters[14], characters[15]);
-
-                promptScanAndReact(&inputChar, &inputInt, characters, originalCharacters);
-
-                exitCondition = checkForWinner(dictionaryPTR, wordOnePos, wordTwoPos, wordThreePos, wordFourPos, characters[ 0], characters[ 1], characters[ 2], characters[ 3],
-                                               characters[ 4], characters[ 5], characters[ 6], characters[ 7],
-                                               characters[ 8], characters[ 9], characters[10], characters[11],
-                                               characters[12], characters[13], characters[14], characters[15]);
-
-                exitCondition = 1;
-            } while (exitCondition != 1);
-
-            fclose(mediumDictionary);
-            break;
-        }
-/*--------------------------------------------------------------------------------*/
-        case '3':	//large dictionary
-        {
-            srand((unsigned int) time(NULL));
-            //set files to corresponding txt file
-            largeDictionary = fopen("largeDictionary.txt", "r");
-            //check if file opened correctly
-            if (largeDictionary == NULL)
-            {
-                cout << "Could not open dictionary.\n";
-                return -1;	// -1 indicates error
-            }
-            //get fourWordCount then close file
-            fourWordCount = analyzeDictionary(largeDictionary);
-            rewind(largeDictionary);
-            //create dynamic array
-            setDictionary(largeDictionary, dictionaryPTR, fourWordCount);
-            //rescan file into the created array.
-            scanFileTo(largeDictionary, dictionaryPTR);
-            //choose 4 indexes to be used as the words for our table.
-            wordOnePos   = randomize(0, fourWordCount); wordTwoPos  = randomize(0, fourWordCount);
-            wordThreePos = randomize(0, fourWordCount); wordFourPos = randomize(0, fourWordCount);
-            //set table characters equal to random mixed index words while also saving the original table
-            originalCharacters[ 0] = characters[ 0] = dictionaryPTR[wordOnePos][0]  ; originalCharacters[ 1] = characters[ 1] = dictionaryPTR[wordOnePos][1]  ; originalCharacters[ 2] = characters[ 2] = dictionaryPTR[wordOnePos][2]  ; originalCharacters[ 3] = characters[ 3] = dictionaryPTR[wordOnePos][3]  ;
-            originalCharacters[ 4] = characters[ 4] = dictionaryPTR[wordTwoPos][0]  ; originalCharacters[ 5] = characters[ 5] = dictionaryPTR[wordTwoPos][1]  ; originalCharacters[ 6] = characters[ 6] = dictionaryPTR[wordTwoPos][2]  ; originalCharacters[ 7] = characters[ 7] = dictionaryPTR[wordTwoPos][3]  ;
-            originalCharacters[ 8] = characters[ 8] = dictionaryPTR[wordThreePos][0]; originalCharacters[ 9] = characters[ 9] = dictionaryPTR[wordThreePos][1]; originalCharacters[10] = characters[10] = dictionaryPTR[wordThreePos][2]; originalCharacters[11] = characters[11] = dictionaryPTR[wordThreePos][3];
-            originalCharacters[12] = characters[12] = dictionaryPTR[wordFourPos][0] ; originalCharacters[13] = characters[13] = dictionaryPTR[wordFourPos][1] ; originalCharacters[14] = characters[14] = dictionaryPTR[wordFourPos][2] ; originalCharacters[15] = characters[15] = dictionaryPTR[wordFourPos][3] ;
-
-            mixWords(characters);
-
-            do
-            {
-                displayTable(characters[0], characters[1], characters[ 2], characters[ 3], characters[ 4], characters[ 5], characters[ 6], characters[ 7],
-                             characters[8], characters[9], characters[10], characters[11], characters[12], characters[13], characters[14], characters[15]);
-
-                promptScanAndReact(&inputChar, &inputInt, characters, originalCharacters);
-
-                exitCondition = checkForWinner(dictionaryPTR, wordOnePos, wordTwoPos, wordThreePos, wordFourPos, characters[ 0], characters[ 1], characters[ 2], characters[ 3],
-                                               characters[ 4], characters[ 5], characters[ 6], characters[ 7],
-                                               characters[ 8], characters[ 9], characters[10], characters[11],
-                                               characters[12], characters[13], characters[14], characters[15]);
-
-                exitCondition = 1;
-            } while (exitCondition != 1);
-
-            fclose(largeDictionary);
-            break;
-        }
-/*------------------------------------------------------------------------------------*/
-        default:
-        {
-            cout << "ERROR : INCORRECT RESPONSE CHOSEN. PLEASE TRY AGAIN" << endl;
-            break;
-        }
-    }
-
-    cout << "End of program. Thank you for your time!" << endl; return 0;
-}
-
-
-/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------FUNCTIONS---------------------------------------------------------------------------------------------------*/
 char correctUpper(char input)        //corrects a lowercase character into a capital character for ease of use
 {
     if (input >= 97 && input <= 122)
@@ -290,7 +68,7 @@ void displayInformationAndInstructions(void)		//function displays user info and 
          << endl;
     cout << "When prompted to provide input you may enter:\n"
          << "	Enter 'r' to reset the board to user-defined values.\n"
-         << "	Enter 'u' to unveil the underlying words.\n"
+         << "	Enter 'o' to show the original board at any time.\n"
          << "	Enter 's' to auto solve the board (Extra Credit)\n"
          << "	Enter 'x' to exit the program.\n"
          << endl;
@@ -303,9 +81,9 @@ void displayInformationAndInstructions(void)		//function displays user info and 
 int promptAndScanForDictionarySize(char selection)		//function asks for dictionary size and returns userInput
 {
     cout << "Which dictionary size do you want? (1=small, 2=medium, 3=large): "; cin >> selection; cout << endl;
-    selection = correctUpper(selection);
-    return selection;
+    return correctUpper(selection);
 }
+
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 int analyzeDictionary(FILE* dictionaryChosen)	//function gets word count of file
@@ -325,7 +103,6 @@ int analyzeDictionary(FILE* dictionaryChosen)	//function gets word count of file
 
     return fourWordCount;
 }
-
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 void setDictionary(FILE* dictionaryChosen, char**& dictionaryPTR, int fourWordCount) // function allocates memory for dictionary
@@ -510,17 +287,71 @@ void mixWords(char *characters)		//function is the master for all row and column
 
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-void displayTable(char c1,  char c2,  char c3,  char c4,
-                  char c5,  char c6,  char c7,  char c8,
-                  char c9,  char c10, char c11, char c12,
+void addNode(Node *headPTR, int *moveCount, char *table)       //function adds a new Node to store a move state
+{
+	Node *tempPTR = new Node;       //allocate memory for new Node
+
+	strcpy(tempPTR->table, table);      //copy string from table array to array within struct Node
+	tempPTR ->moveNumber = *++moveCount;      //store moveCount into moveCount within Node
+	tempPTR->nextPTR = headPTR;     //store current position of head pointer as where the new node will be pointing to
+	headPTR = tempPTR;      //set new headPTR that points to the new Node created
+	return;
+}
+
+
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+void undoMove(Node *headPTR, int &moveCount, char *table)      //function undoes a move
+{
+	if (headPTR->moveNumber == NULL)
+	{
+		cout << "ERROR: NO MOVES SAVED. PLEASE TRY TO MAKE A MOVE BEFORE ATTEMPTING TO UNDO!!!" << endl;
+	}
+	else
+    {
+        Node *tempPTR = new Node;       //create a temporary node to store HeadPTR
+	
+	    tempPTR = headPTR;      //set tempPTR to info headPTR
+	    table = tempPTR->table;     //set table = to the previous stored table
+	    tempPTR->moveNumber = --moveCount;      //store moveCount into moveCount within Node
+	    tempPTR = tempPTR->nextPTR;     //move headPTR to nextPTR in order to complete undo
+	    delete(tempPTR);
+    }
+
+    return;
+}
+
+
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+void displayList( Node *headPTR)
+{
+	Node *tempPTR = headPTR;
+
+	cout << "\n Link: ";
+	while( tempPTR != NULL )
+	{
+		cout << tempPTR->moveNumber;
+		if (tempPTR->nextPTR != NULL)
+		{
+			cout << " -> ";
+		}
+		tempPTR = tempPTR->nextPTR;
+	}
+	cout << endl;
+}
+
+
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+void displayTable(char  c1, char  c2, char  c3, char  c4,
+                  char  c5, char  c6, char  c7, char  c8,
+                  char  c9, char c10, char c11, char c12,
                   char c13, char c14, char c15, char c16)		//displays table
 {
 //printf over cout for ease of formatting!
     printf("\n");
     printf("   E F G H\n");
     printf("   -------\n");
-    printf("A| %c %c %c %c\n", c1,  c2,  c3,  c4);
-    printf("B| %c %c %c %c\n", c5,  c6,  c7,  c8);
+    printf("A| %c %c %c %c\n", c1,  c2,  c3,   c4);
+    printf("B| %c %c %c %c\n", c5,  c6,  c7,   c8);
     printf("C| %c %c %c %c\n", c9,  c10, c11, c12);
     printf("D| %c %c %c %c\n", c13, c14, c15, c16);
     printf("\n");
@@ -529,12 +360,11 @@ void displayTable(char c1,  char c2,  char c3,  char c4,
 }
 
 
-/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-void promptScanAndReact(char *input1, int *input2, char *characters, char *originalCharacters)		//prompts for move and reacts accordingly
+void promptScanAndReact(Node *&headPtr, int *moveCount, char *input1, int *input2, char *characters, char *originalCharacters)
 {
-    static int moveCount = 0;
+    static int timesRan = 0;
 
-    cout << "\n" << ++moveCount << ". Enter the row or column to be rotated, and a number 1..3: ";
+    cout << "\n" << ++timesRan << ". Enter the row or column to be rotated, and a number 1..3: ";
 
     *input1 = correctUpper(getInput());
 
@@ -546,8 +376,17 @@ void promptScanAndReact(char *input1, int *input2, char *characters, char *origi
             cout << "\n.  . .Pressed X to exit. Thanks for playing!. .  ." << endl;
             exit(1);
         }
-            /*-----------------------------------------------------------------------------------*/
+		/*-----------------------------------------------------------------------------------*/
         case 'U':
+        {
+            cout << "\n.  . .Pressed U to undo. .  ." << endl;
+
+	        undoMove(headPtr, *moveCount, characters);
+
+            return;
+        }
+		/*-----------------------------------------------------------------------------------*/
+        case 'O':
         {
             cout << "\nOriginal Table:\n" << endl;
             displayTable(originalCharacters[0], originalCharacters[1], originalCharacters[ 2], originalCharacters[ 3], originalCharacters[ 4], originalCharacters[ 5], originalCharacters[ 6], originalCharacters[ 7],
@@ -600,23 +439,21 @@ void promptScanAndReact(char *input1, int *input2, char *characters, char *origi
     *input2 = getInput() - '0';	// - '0' turns char to proper int
 
     if (*input1 >= 'A' &&  *input1 <= 'D')
-    {
-        swapRow(characters, *input1, *input2);
-    }
+    { swapRow(characters, *input1, *input2); }
     else if (*input1 >= 'E' &&  *input1 <= 'H')
-    {
-        swapColumn(characters, *input1, *input2);
-    }
+    { swapColumn(characters, *input1, *input2); }
+
+	addNode(headPtr, moveCount, characters);
 
     return;
 }
 
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-int checkForWinner(char**& dictionaryPTR,int wordOnePos, int wordTwoPos, int wordThreePos, int wordFourPos, char c1,  char c2,  char c3,  char c4,
-                   char c5,  char c6,  char c7,  char c8,
-                   char c9,  char c10, char c11, char c12,
-                   char c13, char c14, char c15, char c16)		//function checks for winner
+int checkForWinner(char**& dictionaryPTR,int wordOnePos, int wordTwoPos, int wordThreePos, int wordFourPos, char c1,  char c2,  char c3,  char c4,      //function checks for winner
+                                                                                                            char c5,  char c6,  char c7,  char c8,
+                                                                                                            char c9,  char c10, char c11, char c12,
+                                                                                                            char c13, char c14, char c15, char c16)
 {
     char wordOne  [5] = {  c1,  c2,  c3,  c4, '\0' };
     char wordTwo  [5] = {  c5,  c6,  c7,  c8, '\0' };
@@ -630,4 +467,198 @@ int checkForWinner(char**& dictionaryPTR,int wordOnePos, int wordTwoPos, int wor
         return 1;
     }
     else { return -1; }
+}
+
+
+/*------------------------------------------------------------------------------------MAIN-----------------------------------------------------------------------------------------------*/
+
+
+int main()		//main
+{
+//initialize variables
+    FILE *smallDictionary  = NULL;
+    FILE *mediumDictionary = NULL;
+    FILE *largeDictionary  = NULL;
+
+    Node *headPTR = NULL;
+
+    char **dictionaryPTR;
+
+    char inputChar = 0;
+    char selection = 0;
+
+    char characters[16] = { 0 };
+    char originalCharacters[16] = { 0 };
+
+	int moveCount = -1;
+    int exitCondition = -1;
+    int inputInt = 0;
+    int fourWordCount = 0;
+    int wordOnePos, wordTwoPos, wordThreePos, wordFourPos;
+
+	addNode(headPTR, &moveCount, characters);        //initial commit of null Node
+    displayInformationAndInstructions();
+
+    switch (promptAndScanForDictionarySize(selection))
+    {
+/*-------------------------------------------------------------------------------*/
+        case 'X':
+        {
+            cout << "You chose X to exit" << endl;
+            return -1;
+        }
+/*-------------------------------------------------------------------------------*/
+        case '1':	//small dictionary
+        {
+            srand((unsigned int) time(NULL));
+	        //set files to corresponding txt file
+            smallDictionary = fopen("smallDictionary.txt", "r");
+            //check if file opened correctly
+            if (smallDictionary == NULL)
+            {
+                cout << "Could not open dictionary.\n";
+                return -1;	 //-1 indicates error
+            }
+            //get fourWordCount then close file
+            fourWordCount = analyzeDictionary(smallDictionary);
+            rewind(smallDictionary);
+           //create dynamic array
+            setDictionary(smallDictionary, dictionaryPTR, fourWordCount);
+	        //rescan file into the created array.
+            scanFileTo(smallDictionary, dictionaryPTR);
+            //choose 4 indexes to be used as the words for our table.
+            wordOnePos   = randomize(0, fourWordCount); wordTwoPos  = randomize(0, fourWordCount);
+            wordThreePos = randomize(0, fourWordCount); wordFourPos = randomize(0, fourWordCount);
+            //set table characters equal to random mixed index words while also saving the original table
+            originalCharacters[ 0] = characters[ 0] = dictionaryPTR[  wordOnePos][0]; originalCharacters[ 1] = characters[ 1] = dictionaryPTR[  wordOnePos][1]; originalCharacters[ 2] = characters[ 2] = dictionaryPTR[  wordOnePos][2]; originalCharacters[ 3] = characters[ 3] = dictionaryPTR[  wordOnePos][3];
+            originalCharacters[ 4] = characters[ 4] = dictionaryPTR[  wordTwoPos][0]; originalCharacters[ 5] = characters[ 5] = dictionaryPTR[  wordTwoPos][1]; originalCharacters[ 6] = characters[ 6] = dictionaryPTR[  wordTwoPos][2]; originalCharacters[ 7] = characters[ 7] = dictionaryPTR[  wordTwoPos][3];
+            originalCharacters[ 8] = characters[ 8] = dictionaryPTR[wordThreePos][0]; originalCharacters[ 9] = characters[ 9] = dictionaryPTR[wordThreePos][1]; originalCharacters[10] = characters[10] = dictionaryPTR[wordThreePos][2]; originalCharacters[11] = characters[11] = dictionaryPTR[wordThreePos][3];
+            originalCharacters[12] = characters[12] = dictionaryPTR[ wordFourPos][0]; originalCharacters[13] = characters[13] = dictionaryPTR[ wordFourPos][1]; originalCharacters[14] = characters[14] = dictionaryPTR[ wordFourPos][2]; originalCharacters[15] = characters[15] = dictionaryPTR[ wordFourPos][3];
+
+            mixWords(characters);
+	        addNode(headPTR, &moveCount, originalCharacters);        //STORES INITIAL NODE
+
+	        do
+            {
+                displayTable(characters[0], characters[1], characters[ 2], characters[ 3], characters[ 4], characters[ 5], characters[ 6], characters[ 7],
+                             characters[8], characters[9], characters[10], characters[11], characters[12], characters[13], characters[14], characters[15]);
+				displayList(headPTR);
+                promptScanAndReact(headPTR, &moveCount, &inputChar, &inputInt, characters, originalCharacters);
+
+                exitCondition = checkForWinner(dictionaryPTR, wordOnePos, wordTwoPos, wordThreePos, wordFourPos, characters[ 0], characters[ 1], characters[ 2], characters[ 3],
+                                               characters[ 4], characters[ 5], characters[ 6], characters[ 7],
+                                               characters[ 8], characters[ 9], characters[10], characters[11],
+                                               characters[12], characters[13], characters[14], characters[15]);
+
+            } while (exitCondition != 1);
+
+            fclose(smallDictionary);
+            break;
+        }
+/*--------------------------------------------------------------------------------*/
+        case '2':	//medium dictionary
+        {
+            //SEED
+	        srand((unsigned int) time(NULL));
+            //set files to corresponding txt file
+            mediumDictionary = fopen("mediumDictionary.txt", "r");
+            //check if file opened correctly
+            if (mediumDictionary == NULL)
+            {
+                cout << "Could not open dictionary.\n";
+                return -1;	// -1 indicates error
+            }
+            //get fourWordCount then close file
+            fourWordCount = analyzeDictionary(mediumDictionary);
+            rewind(mediumDictionary);
+            //create dynamic array
+            setDictionary(mediumDictionary, dictionaryPTR, fourWordCount);
+            //rescan file into the created array.
+            scanFileTo(mediumDictionary, dictionaryPTR);
+            //choose 4 indexes to be used as the words for our table.
+            wordOnePos   = randomize(0, fourWordCount); wordTwoPos  = randomize(0, fourWordCount);
+            wordThreePos = randomize(0, fourWordCount); wordFourPos = randomize(0, fourWordCount);
+            //set table characters equal to random mixed index words while also saving the original table
+            originalCharacters[ 0] = characters[ 0] = dictionaryPTR[wordOnePos][0]  ; originalCharacters[ 1] = characters[ 1] = dictionaryPTR[wordOnePos][1]  ; originalCharacters[ 2] = characters[ 2] = dictionaryPTR[wordOnePos][2]  ; originalCharacters[ 3] = characters[ 3] = dictionaryPTR[wordOnePos][3]  ;
+            originalCharacters[ 4] = characters[ 4] = dictionaryPTR[wordTwoPos][0]  ; originalCharacters[ 5] = characters[ 5] = dictionaryPTR[wordTwoPos][1]  ; originalCharacters[ 6] = characters[ 6] = dictionaryPTR[wordTwoPos][2]  ; originalCharacters[ 7] = characters[ 7] = dictionaryPTR[wordTwoPos][3]  ;
+            originalCharacters[ 8] = characters[ 8] = dictionaryPTR[wordThreePos][0]; originalCharacters[ 9] = characters[ 9] = dictionaryPTR[wordThreePos][1]; originalCharacters[10] = characters[10] = dictionaryPTR[wordThreePos][2]; originalCharacters[11] = characters[11] = dictionaryPTR[wordThreePos][3];
+            originalCharacters[12] = characters[12] = dictionaryPTR[wordFourPos][0] ; originalCharacters[13] = characters[13] = dictionaryPTR[wordFourPos][1] ; originalCharacters[14] = characters[14] = dictionaryPTR[wordFourPos][2] ; originalCharacters[15] = characters[15] = dictionaryPTR[wordFourPos][3] ;
+
+            mixWords(characters);
+
+            do
+            {
+                displayTable(characters[0], characters[1], characters[ 2], characters[ 3], characters[ 4], characters[ 5], characters[ 6], characters[ 7],
+                             characters[8], characters[9], characters[10], characters[11], characters[12], characters[13], characters[14], characters[15]);
+
+	            promptScanAndReact(headPTR, &moveCount, &inputChar, &inputInt, characters, originalCharacters);
+
+                exitCondition = checkForWinner(dictionaryPTR, wordOnePos, wordTwoPos, wordThreePos, wordFourPos, characters[ 0], characters[ 1], characters[ 2], characters[ 3],
+                                               characters[ 4], characters[ 5], characters[ 6], characters[ 7],
+                                               characters[ 8], characters[ 9], characters[10], characters[11],
+                                               characters[12], characters[13], characters[14], characters[15]);
+
+                exitCondition = 1;
+            } while (exitCondition != 1);
+
+            fclose(mediumDictionary);
+            break;
+        }
+/*--------------------------------------------------------------------------------*/
+        case '3':	//large dictionary
+        {
+            srand((unsigned int) time(NULL));
+            //set files to corresponding txt file
+            largeDictionary = fopen("largeDictionary.txt", "r");
+            //check if file opened correctly
+            if (largeDictionary == NULL)
+            {
+                cout << "Could not open dictionary.\n";
+                return -1;	// -1 indicates error
+            }
+            //get fourWordCount then close file
+            fourWordCount = analyzeDictionary(largeDictionary);
+            rewind(largeDictionary);
+            //create dynamic array
+            setDictionary(largeDictionary, dictionaryPTR, fourWordCount);
+            //rescan file into the created array.
+            scanFileTo(largeDictionary, dictionaryPTR);
+            //choose 4 indexes to be used as the words for our table.
+            wordOnePos   = randomize(0, fourWordCount); wordTwoPos  = randomize(0, fourWordCount);
+            wordThreePos = randomize(0, fourWordCount); wordFourPos = randomize(0, fourWordCount);
+            //set table characters equal to random mixed index words while also saving the original table
+            originalCharacters[ 0] = characters[ 0] = dictionaryPTR[wordOnePos][0]  ; originalCharacters[ 1] = characters[ 1] = dictionaryPTR[wordOnePos][1]  ; originalCharacters[ 2] = characters[ 2] = dictionaryPTR[wordOnePos][2]  ; originalCharacters[ 3] = characters[ 3] = dictionaryPTR[wordOnePos][3]  ;
+            originalCharacters[ 4] = characters[ 4] = dictionaryPTR[wordTwoPos][0]  ; originalCharacters[ 5] = characters[ 5] = dictionaryPTR[wordTwoPos][1]  ; originalCharacters[ 6] = characters[ 6] = dictionaryPTR[wordTwoPos][2]  ; originalCharacters[ 7] = characters[ 7] = dictionaryPTR[wordTwoPos][3]  ;
+            originalCharacters[ 8] = characters[ 8] = dictionaryPTR[wordThreePos][0]; originalCharacters[ 9] = characters[ 9] = dictionaryPTR[wordThreePos][1]; originalCharacters[10] = characters[10] = dictionaryPTR[wordThreePos][2]; originalCharacters[11] = characters[11] = dictionaryPTR[wordThreePos][3];
+            originalCharacters[12] = characters[12] = dictionaryPTR[wordFourPos][0] ; originalCharacters[13] = characters[13] = dictionaryPTR[wordFourPos][1] ; originalCharacters[14] = characters[14] = dictionaryPTR[wordFourPos][2] ; originalCharacters[15] = characters[15] = dictionaryPTR[wordFourPos][3] ;
+
+            mixWords(characters);
+
+            do
+            {
+                displayTable(characters[0], characters[1], characters[ 2], characters[ 3], characters[ 4], characters[ 5], characters[ 6], characters[ 7],
+                             characters[8], characters[9], characters[10], characters[11], characters[12], characters[13], characters[14], characters[15]);
+
+	            promptScanAndReact(headPTR, &moveCount, &inputChar, &inputInt, characters, originalCharacters);
+
+                exitCondition = checkForWinner(dictionaryPTR, wordOnePos, wordTwoPos, wordThreePos, wordFourPos, characters[ 0], characters[ 1], characters[ 2], characters[ 3],
+                                               characters[ 4], characters[ 5], characters[ 6], characters[ 7],
+                                               characters[ 8], characters[ 9], characters[10], characters[11],
+                                               characters[12], characters[13], characters[14], characters[15]);
+
+                exitCondition = 1;
+            } while (exitCondition != 1);
+
+            fclose(largeDictionary);
+            break;
+        }
+/*------------------------------------------------------------------------------------*/
+        default:
+        {
+            cout << "ERROR : INCORRECT RESPONSE CHOSEN. PLEASE TRY AGAIN" << endl;
+            break;
+        }
+    }
+
+    cout << "End of program. Thank you for your time!" << endl; return 0;
 }
